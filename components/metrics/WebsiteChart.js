@@ -5,10 +5,13 @@ import MetricsBar from './MetricsBar';
 import WebsiteHeader from './WebsiteHeader';
 import DateFilter from 'components/common/DateFilter';
 import StickyHeader from 'components/helpers/StickyHeader';
+import Button from 'components/common/Button';
 import useFetch from 'hooks/useFetch';
 import useDateRange from 'hooks/useDateRange';
 import useTimezone from 'hooks/useTimezone';
+import usePageQuery from 'hooks/usePageQuery';
 import { getDateArray, getDateLength } from 'lib/date';
+import Times from 'assets/times.svg';
 import styles from './WebsiteChart.module.css';
 
 export default function WebsiteChart({
@@ -22,6 +25,11 @@ export default function WebsiteChart({
   const [dateRange, setDateRange] = useDateRange(websiteId);
   const { startDate, endDate, unit, value, modified } = dateRange;
   const [timezone] = useTimezone();
+  const {
+    router,
+    resolve,
+    query: { url },
+  } = usePageQuery();
 
   const { data, loading } = useFetch(
     `/api/website/${websiteId}/pageviews`,
@@ -30,6 +38,7 @@ export default function WebsiteChart({
       end_at: +endDate,
       unit,
       tz: timezone,
+      url,
       token,
     },
     { onDataLoad, update: [modified] },
@@ -45,8 +54,12 @@ export default function WebsiteChart({
     return [[], []];
   }, [data]);
 
+  function handleCloseFilter() {
+    router.push(resolve({ url: undefined }));
+  }
+
   return (
-    <>
+    <div className={styles.container}>
       <WebsiteHeader websiteId={websiteId} token={token} title={title} showLink={showLink} />
       <div className={classNames(styles.header, 'row')}>
         <StickyHeader
@@ -54,6 +67,7 @@ export default function WebsiteChart({
           stickyClassName={styles.sticky}
           enabled={stickyHeader}
         >
+          {url && <PageFilter url={url} onClick={handleCloseFilter} />}
           <div className="col-12 col-lg-9">
             <MetricsBar websiteId={websiteId} token={token} />
           </div>
@@ -78,6 +92,16 @@ export default function WebsiteChart({
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }
+
+const PageFilter = ({ url, onClick }) => {
+  return (
+    <div className={classNames(styles.url, 'col-12')}>
+      <Button icon={<Times />} onClick={onClick} variant="action" iconRight>
+        {url}
+      </Button>
+    </div>
+  );
+};
