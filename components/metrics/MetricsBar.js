@@ -31,7 +31,7 @@ export default function MetricsBar({ websiteId, className }) {
       },
       headers: { [TOKEN_HEADER]: shareToken?.token },
     },
-    [modified],
+    [url, modified],
   );
 
   const formatFunc = format ? formatLongNumber : formatNumber;
@@ -60,7 +60,7 @@ export default function MetricsBar({ websiteId, className }) {
           />
           <MetricCard
             label={<FormattedMessage id="metrics.bounce-rate" defaultMessage="Bounce rate" />}
-            value={pageviews ? (bounces / pageviews) * 100 : 0}
+            value={uniques ? (bounces / uniques) * 100 : 0}
             format={n => Number(n).toFixed(0) + '%'}
           />
           <MetricCard
